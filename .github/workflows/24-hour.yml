@@ -1,0 +1,32 @@
+name: Enforce 24-hour Merge Delay
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  check-merge-time:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if 24 hours have passed since PR creation
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+            });
+
+            const createdAt = new Date(pr.data.created_at);
+            const now = new Date();
+            const diffHours = (now - createdAt) / (1000 * 60 * 60);
+
+            if (diffHours >= 0.1) {
+              console.log('24시간이 경과하여 병합이 가능합니다.');
+              // 성공 상태 반환
+              return;
+            } else {
+              const hoursLeft = (24 - diffHours).toFixed(2);
+              throw new Error(`풀 리퀘스트를 병합하려면 아직 ${hoursLeft} 시간이 남았습니다.`);
+            }
