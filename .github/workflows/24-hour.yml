@@ -6,8 +6,9 @@ on:
 
 # 권한 설정 추가
 permissions: 
-  pull-requests: read
+  pull-requests: write
   contents: read
+  issues: write
   
 jobs:
   check-merge-time:
